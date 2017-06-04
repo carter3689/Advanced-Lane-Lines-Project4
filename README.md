@@ -1,35 +1,79 @@
-## Advanced Lane Finding
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
+# Advanced Car Lane Detection Write Up
 
-In this project, your goal is to write a software pipeline to identify the lane boundaries in a video, but the main output or product we want you to create is a detailed writeup of the project.  Check out the [writeup template](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup.  
+## Camera Calibration
 
-Creating a great writeup:
----
-A great writeup should include the rubric points as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
+**The code for this step is located in `advanced-lane-lines-part1.ipyb`**
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
+To start, the object points, which would be the (x,y,z) coordinates, were found on the chessboard in the given image. I assumed that the chessboard was fixed on the (x,y) plane and z=0. consequently, `objp` is a replica of the array coordinates and the `objpoints` will appened with a copy of the image each time through the iteration. 
 
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
+I then used the output(`objpoints`,`imgpoints`) to compute the camera calibration & distortion coefficients using `cv2.clibrateCamera()`function. The result is listed below:
 
-The Project
----
+![results image](write-up-images/camera-calib-result.png)
 
-The goals / steps of this project are the following:
+### When applying the above pipeline to a street test image:
 
-* Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
-* Apply a distortion correction to raw images.
-* Use color transforms, gradients, etc., to create a thresholded binary image.
-* Apply a perspective transform to rectify binary image ("birds-eye view").
-* Detect lane pixels and fit to find the lane boundary.
-* Determine the curvature of the lane and vehicle position with respect to center.
-* Warp the detected lane boundaries back onto the original image.
-* Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+![street_test_image](output_images/part2/undistored_straight_lines1.jpg)
 
-The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing your pipeline on single frames.  If you want to extract more test images from the videos, you can simply use an image writing method like `cv2.imwrite()`, i.e., you can read the video in frame by frame as usual, and for frames you want to save for later you can write to an image file.  
+## For my next trick...
 
-To help the reviewer examine your work, please save examples of the output from each stage of your pipeline in the folder called `ouput_images`, and include a description in your writeup for the project of what each image shows.    The video called `project_video.mp4` is the video your pipeline should work well on.  
+### Pipeline for Binary Lane line transform
 
-The `challenge_video.mp4` video is an extra (and optional) challenge for you if you want to test your pipeline under somewhat trickier conditions.  The `harder_challenge.mp4` video is another optional challenge and is brutal!
+I used a combination of color thresholds and gradient thresholds to generate a binary image. The code for this step can be found in `Creating-image-pipeline-for-bird's-eye-view-images-Part2.ipynb`as a part of the `create_binary` function. A combination of HLS filters were used inside of the function for a gradient/luminosity filter.
 
-If you're feeling ambitious (again, totally optional though), don't stop there!  We encourage you to go out and take video of your own, calibrate your camera and show us how you would implement this project from scratch!
+**The output of this step:**
+
+![Binary](output_images/part2/binary.jpg)
+
+### Perspective Transform - Bird's Eye View
+
+This is accomplished with the function `warp()` and this appears inside of cell number 6 in `Creating-image-pipeline-for-bird's-eye-view-images-Part2.ipynb`. The parameters for source (`src`) and destination (`dst`) were hardcoded inside of my function. This bit of code is as follows:
+
+`corners = np.float32([[190,720],[589,457],[698,457],[1145,720]])
+   new_top_left=np.array([corners[0,0],0])
+   new_top_right=np.array([corners[3,0],0])
+   offset=[150,0]
+    
+   img_size = (img.shape[1], img.shape[0])
+   src = np.float32([corners[0],corners[1],corners[2],corners[3]])
+   dst = np.float32([corners[0]+offset,new_top_left+offset,new_top_right-offset,corners[3]-offset])`
+
+#### The results:
+
+| Source        | Destination   | 
+|:-------------:|:-------------:| 
+| 190, 720      | 340, 720      | 
+| 589, 457      | 340, 0        |
+| 698, 457      | 995, 0        |
+| 1145, 720     | 99, 720       |
+
+**Bird's Eye view Image:**
+
+![Bird's Eye View](write-up-images/bird-eye.png)
+
+## Identifying lane lines
+
+Inspired by help from the developer community I found a suitable pipeline of functions to help find and fit lines to the lanes for identification. This is also found in `Creating-image-pipeline-for-bird's-eye-view-images-Part2.ipynb` These functions are defined in cell 12 of the notebook.
+
+The result of these functions when placed in action is as follow:
+
+![fitted-lines](output_images/part2/fitted_lines.jpg)
+![left](output_images/part2/left_line.jpg)
+![right](output_images/part2/right_line.jpg)
+
+## Finding the road curves and passing to image
+
+This is implemented through a set of class based methods(`Line.get_radius_of_curvature(), Line.update(), and Line.set_line_base_pos()`). I then used the function `project_lane_lines` to place the lines and called this inside of `process_image`. These functions can be found in `Creating-pipeline-for-video-images-of-lane-lines-Part3.ipynb`
+
+**Example image of lane detection**
+
+![lane-detect](write-up-images/lane_capture.png)
+
+### Pipeline Video
+[link to my video result](https://youtu.be/dPr-lNOC8QY)
+
+# Discussion
+
+## Problems and outlook
+
+A very unusual problem came when trying to ultimatly find the lane lines in the images. I kept receieving a splice error when trying to find the peaks in my image(s). I found out that it was caused by the fact I am using Python 3, and because of this fact, I needed to divide in a different way. Because of this issue, 6 lane lines were detected each time I ran my code, but the pipelane fit well on the road...and I'm not exactly sure where the extra lanes came from. I'm under the small assumption that it has something to do with the `//` that I used, but I would have to do more digging as to what would be a better use case.
