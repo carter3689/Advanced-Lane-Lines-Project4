@@ -77,3 +77,5 @@ This is implemented through a set of class based methods(`Line.get_radius_of_cur
 ## Problems and outlook
 
 A very unusual problem came when trying to ultimatly find the lane lines in the images. I kept receieving a splice error when trying to find the peaks in my image(s). I found out that it was caused by the fact I am using Python 3, and because of this fact, I needed to divide in a different way. Because of this issue, 6 lane lines were detected each time I ran my code, but the pipelane fit well on the road...and I'm not exactly sure where the extra lanes came from. I'm under the small assumption that it has something to do with the `//` that I used, but I would have to do more digging as to what would be a better use case.
+
+Thinking hypothetically, I think something that might make my pipeline break could be heavy overcasts/rain which could cast more shadows on the road than expected. Something to combat this would be to adjust how my pipeline distinguished shadows. I could also possibly look into how to extract the color and curvature of other parts of the street that would be mostly consistant throughout. 
