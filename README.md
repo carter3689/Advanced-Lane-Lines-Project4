@@ -65,12 +65,14 @@ The result of these functions when placed in action is as follow:
 
 This is implemented through a set of class based methods(`Line.get_radius_of_curvature(), Line.update(), and Line.set_line_base_pos()`). I then used the function `project_lane_lines` to place the lines and called this inside of `process_image`. These functions can be found in `Creating-pipeline-for-video-images-of-lane-lines-Part3.ipynb`
 
+**Note** The distance from the center of the lane is computed in the Line.set_line_base_pos() method, which essentially measures the distance to each lane and computes the position assuming the lane has a given fixed width of 3.7m. I then use this calculation to further find the center deviation of the lane. This is found (and made mention to in a comment) at the bottom of the pipeline at the variable `off-center`.
+
 **Example image of lane detection**
 
-![lane-detect](write-up-images/lane_capture.png)
+![lane-detect](write-up-images/road-image.png)
 
 ### Pipeline Video
-[link to my video result](https://youtu.be/prMcqw-k6-k)
+[link to my video result](https://youtu.be/dPr-lNOC8QY)
 
 # Discussion
 
