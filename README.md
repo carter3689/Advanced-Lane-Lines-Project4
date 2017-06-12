@@ -72,7 +72,7 @@ This is implemented through a set of class based methods(`Line.get_radius_of_cur
 ![lane-detect](write-up-images/road-image.png)
 
 ### Pipeline Video
-[link to my video result](https://youtu.be/dPr-lNOC8QY)
+[link to my video result](https://youtu.be/4YqdaEM-79I)
 
 # Discussion
 
